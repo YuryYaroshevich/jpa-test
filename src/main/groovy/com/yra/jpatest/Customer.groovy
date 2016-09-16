@@ -5,6 +5,7 @@ import groovy.transform.TupleConstructor
 import org.hibernate.annotations.Cascade
 
 import javax.persistence.*
+import java.time.LocalDate
 
 @Entity
 @NamedEntityGraph(name = "Customer.phone",
@@ -17,6 +18,8 @@ class Customer {
     long id
     String firstName
     String lastName
+    LocalDate dateOfBirth
+    LocalDate dateOfMariage
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER, mappedBy = "customer")
     //@Cascade(org.hibernate.annotations.CascadeType.ALL)
@@ -33,10 +36,11 @@ class Customer {
         this.phones = phones
     }
 
-    Customer(String firstName, String lastName) {
+    Customer(String firstName, String lastName, LocalDate dateOfBirth, LocalDate dateOfMariage) {
         this.firstName = firstName
         this.lastName = lastName
-        this.dogs = dogs
+        this.dateOfBirth = dateOfBirth
+        this.dateOfMariage = dateOfMariage
     }
 
     @Override
@@ -47,6 +51,8 @@ class Customer {
                 ", lastName='" + lastName + '\'' +
                 ", phones=" + phones +
                 ", dogs=" + dogs +
+                ", dateOfBirth=" + dateOfBirth +
+                ", dateOfMariage=" + dateOfMariage
                 '}';
     }
 }

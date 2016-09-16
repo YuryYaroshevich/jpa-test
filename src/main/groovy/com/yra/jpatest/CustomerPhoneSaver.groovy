@@ -3,8 +3,12 @@ package com.yra.jpatest
 import org.springframework.boot.CommandLineRunner
 import org.springframework.boot.SpringApplication
 import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.cglib.core.Local
 import org.springframework.context.annotation.Bean
 
+import javax.persistence.EntityManager
+import javax.persistence.Query
+import java.time.LocalDate
 
 
 @SpringBootApplication
@@ -14,11 +18,24 @@ class CustomerPhoneSaver {
     }
 
     @Bean
-    CommandLineRunner demo(CustomerRepository customerRepo, PhoneRepository phoneRepo) {
+    CommandLineRunner demo(CustomerRepository customerRepo, PhoneRepository phoneRepo, EntityManager entityManager) {
         { args ->
             //cascadeRemove(customerRepo, phoneRepo)
-            cascadeSave(customerRepo, phoneRepo)
+            //cascadeSave(customerRepo, phoneRepo)
+            checkDateWithCustomSqlQuery(customerRepo, phoneRepo, entityManager)
         }
+    }
+
+    static checkDateWithCustomSqlQuery(CustomerRepository customerRepo, PhoneRepository phoneRepo, EntityManager entityManager) {
+        def savedCustomers = customerRepo.save([new Customer("jack", "jackson", LocalDate.of(2017, 1, 2), LocalDate.of(2034, 1, 1)),
+                           new Customer("bob", "bobson", LocalDate.of(2024, 4, 15), LocalDate.of(2045, 4, 12))])
+
+        phoneRepo.save([new Phone("222-33-55", savedCustomers[0]), new Phone("111-44-77", savedCustomers[1])])
+        Query q = entityManager.createNativeQuery("select c.* from customer c inner join phone p on c.id = p.customer_id" +
+                " where :date between c.date_Of_Birth AND c.date_Of_Mariage order by c.first_name", Customer)
+        q.setParameter("date", LocalDate.of(2029, 1, 1))
+        List<Customer> customers = q.getResultList()
+        customers.each { println it }
     }
 
     static cascadeSave(CustomerRepository customerRepo, PhoneRepository phoneRepo) {
